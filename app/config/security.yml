@@ -1,0 +1,57 @@
+# To get started with security, check out the documentation:
+# http://symfony.com/doc/current/security.html
+security:
+
+    role_hierarchy:
+        ROLE_ADMIN: [ROLE_USER]
+
+    encoders:
+        Symfony\Component\Security\Core\User\User:
+            algorithm: bcrypt
+        AppBundle\Entity\Member:
+            algorithm: bcrypt
+
+    # http://symfony.com/doc/current/security.html#b-configuring-how-users-are-loaded
+    providers:
+        chain_provider:
+            chain:
+                providers: [ in_memory, db_provider ]
+        in_memory:
+            memory:
+                users:
+                    admin:
+                        password: $2y$13$C3D/lnwWeh73axMnldcB.euo.Gkv4IThttEFp2.yaEWiIt585zbOa
+                        roles: 'ROLE_ADMIN'
+        db_provider:
+            entity:
+                class: AppBundle:Member
+                property: username
+
+    firewalls:
+        # disables authentication for assets and the profiler, adapt it according to your needs
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        main:
+            pattern: ^/
+            provider: chain_provider
+            form_login:
+                username_parameter: '_username'
+                login_path: login
+                check_path: login
+            logout: true
+            anonymous: ~
+            # activate different ways to authenticate
+
+            # http_basic: ~
+            # http://symfony.com/doc/current/security.html#a-configuring-how-your-users-will-authenticate
+
+            # form_login: ~
+            # http://symfony.com/doc/current/cookbook/security/form_login_setup.html
+
+
+    access_control:
+        - { path: ^/registration-form-submission$, role: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/(login|register)$, role: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/, role: ROLE_USER }
